@@ -1,0 +1,26 @@
+name: shellcheck
+
+on:
+  push:
+    paths:
+        - '**.sh'
+        - '.github/workflows/shellcheck.yml'
+
+# This allows a subsequently queued workflow run to interrupt previous runs
+concurrency:
+    group: kotlin-mbedtls-'${{ github.workflow }} @ ${{ github.event.pull_request.head.label || github.head_ref || github.ref }}'
+    cancel-in-progress: true
+  
+jobs:
+  shellcheck:
+    timeout-minutes: 5
+
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+      - run: sudo apt install shellcheck
+      - name: Find shell files and run shellcheck
+        run: |
+            find "." -type f -name "*.sh" | while read -r file; do
+                shellcheck "$file"
+            done
